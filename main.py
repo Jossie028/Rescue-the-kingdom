@@ -9,19 +9,27 @@ pygame.init()
 pygame.font.init()
 
 # Hacemos la pantalla del juego
-size = (ANCHO_PANTALLA, ALTO_PANTALLA)
-screen = pygame.display.set_mode(size, pygame.FULLSCREEN)
+
+size= (ANCHO_PANTALLA, ALTO_PANTALLA)
+screen= pygame.display.set_mode(size, pygame.FULLSCREEN | pygame.SCALED)
 pygame.display.set_caption("Rescue The Kingdom")
 
 # Fuentes para los textos del juego
-fuente_titulo = pygame.font.SysFont("Arial", 64, bold=True)
-fuente_texto = pygame.font.SysFont("Arial", 32)
+fuente_titulo = pygame.font.SysFont("Arial", 32, bold=True)
+fuente_texto = pygame.font.SysFont("Arial", 24)
 
 # Funcion para dibujar texto centrado en pantalla
 def dibujar_texto(texto, fuente, color, x, y):
     imagen_texto = fuente.render(texto, True, color)
     rectangulo_texto = imagen_texto.get_rect(center=(x, y))
     screen.blit(imagen_texto, rectangulo_texto)
+
+#Texturas del mapa
+
+img_muro = pygame.image.load("assets/imagenes/escenario/descarga.WEBP") .convert_alpha()
+img_muro = pygame.transform.scale (img_muro, (TILE_SIZE, TILE_SIZE))
+
+img_suelo = pygame.image.load("assets/imagenes/escenario/piso.jpg")
 
 # Indice del mapa actual
 indice_mapa = 0  
@@ -30,12 +38,15 @@ indice_mapa = 0
 def cargar_mapa(mapa_array):
     muros_nuevos = []
     puerta_nueva = None
+    suelos_nuevos = []
 
     # Recorremos el mapa
     for fila_index, fila in enumerate(mapa_array):
         for col_index, piso in enumerate(fila):
             x = col_index * TILE_SIZE
             y = fila_index * TILE_SIZE
+
+            suelos_nuevos.append((x, y))
 
             # Si es 1 es muro
             if piso == '1':
@@ -45,10 +56,10 @@ def cargar_mapa(mapa_array):
             elif piso == '2':
                 puerta_nueva = pygame.Rect(x, y, TILE_SIZE, TILE_SIZE)
                 
-    return muros_nuevos, puerta_nueva
+    return muros_nuevos, suelos_nuevos, puerta_nueva
 
 # Cargamos el primer mapa
-muros, puerta = cargar_mapa(MAPAS[indice_mapa])
+muros,suelos, puerta = cargar_mapa(MAPAS[indice_mapa])
 
 # Creamos jugador y enemigos
 jugador = Caballero(400, 300)
@@ -56,10 +67,10 @@ enemigos = [Enemigo(200, 200)]
 
 # Reinicia el juego
 def reiniciar_juego():
-    global indice_mapa, muros, puerta, jugador, enemigos
+    global indice_mapa, muros, puerta, jugador, enemigos, suelos
 
     indice_mapa = 0
-    muros, puerta = cargar_mapa(MAPAS[indice_mapa])
+    muros,suelos, puerta = cargar_mapa(MAPAS[indice_mapa])
 
     jugador = Caballero(400, 300)
     enemigos = [Enemigo(200, 200)]
@@ -119,9 +130,12 @@ while True:
     # Estado donde se juega
     elif estado_juego == "JUGANDO":
 
+        for sx, sy in suelos:
+            screen.blit((img_suelo),(sx, sy))
+
         # Dibujamos los muros
         for muro in muros:
-            pygame.draw.rect(screen, (100, 100, 100), muro)
+            screen.blit(img_muro, muro)
         
         # Dibujamos la puerta
         if puerta is not None:
@@ -132,7 +146,7 @@ while True:
             indice_mapa += 1
 
             if indice_mapa < len(MAPAS):
-                muros, puerta = cargar_mapa(MAPAS[indice_mapa])
+                muros,suelos, puerta = cargar_mapa(MAPAS[indice_mapa])
 
                 # Reposicionamos jugador
                 jugador.rect.x = 400
