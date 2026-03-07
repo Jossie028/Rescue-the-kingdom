@@ -9,7 +9,6 @@ pygame.init()
 pygame.font.init()
 
 # Hacemos la pantalla del juego
-
 size= (ANCHO_PANTALLA, ALTO_PANTALLA)
 screen= pygame.display.set_mode(size, pygame.FULLSCREEN | pygame.SCALED)
 pygame.display.set_caption("Rescue The Kingdom")
@@ -25,14 +24,10 @@ def dibujar_texto(texto, fuente, color, x, y):
     screen.blit(imagen_texto, rectangulo_texto)
 
 #Texturas del mapa
-
 img_muro = pygame.image.load("assets/imagenes/escenario/descarga.WEBP") .convert_alpha()
 img_muro = pygame.transform.scale (img_muro, (TILE_SIZE, TILE_SIZE))
 
 img_suelo = pygame.image.load("assets/imagenes/escenario/piso.jpg")
-
-# Indice del mapa actual
-indice_mapa = 0  
 
 # Funcion que convierte el mapa en muros y puerta
 def cargar_mapa(mapa_array):
@@ -58,12 +53,21 @@ def cargar_mapa(mapa_array):
                 
     return muros_nuevos, suelos_nuevos, puerta_nueva
 
+# Indice del mapa actual 
+indice_mapa = 0 
+
 # Cargamos el primer mapa
 muros,suelos, puerta = cargar_mapa(MAPAS[indice_mapa])
 
-# Creamos jugador y enemigos
-jugador = Caballero(400, 300)
-enemigos = [Enemigo(200, 200)]
+# Creamos jugador y enemigos (Nivel 1)
+jugador = Caballero(64, 288)
+
+enemigos = [
+    Enemigo(64, 64, "comun"),    
+    Enemigo(500, 64, "comun"),   
+    Enemigo(300, 200, "comun"),  
+    Enemigo(500, 300, "comun")
+]
 
 # Reinicia el juego
 def reiniciar_juego():
@@ -72,8 +76,14 @@ def reiniciar_juego():
     indice_mapa = 0
     muros,suelos, puerta = cargar_mapa(MAPAS[indice_mapa])
 
-    jugador = Caballero(400, 300)
-    enemigos = [Enemigo(200, 200)]
+    jugador = Caballero(64, 288)
+    
+    enemigos = [
+        Enemigo(64, 64, "comun"),    
+        Enemigo(425, 80, "comun"),   
+        Enemigo(250, 190, "comun"),  
+        Enemigo(400, 300, "comun")
+    ]
 
 # Estado inicial del juego
 estado_juego = "MENU"
@@ -148,12 +158,28 @@ while True:
             if indice_mapa < len(MAPAS):
                 muros,suelos, puerta = cargar_mapa(MAPAS[indice_mapa])
 
-                # Reposicionamos jugador
-                jugador.rect.x = 400
-                jugador.rect.y = 300
+                #nivel 2
+                if indice_mapa == 1:
+                    # Reposicionamos jugador
+                    jugador.rect.x = 300
+                    jugador.rect.y = 300
 
-                # Reiniciamos enemigos
-                enemigos = [Enemigo(200, 200)]
+                    # Reiniciamos enemigos 
+                    enemigos=[
+                        Enemigo(200,150, "comun"), 
+                        Enemigo(400,150, "fuerte"),
+                        Enemigo(300, 250, "fuerte")
+                    ]
+                elif indice_mapa == 2:
+                    # Nivel 3
+                    jugador.rect.x = 300
+                    jugador.rect.y = 320 
+                    
+                    enemigos = [
+                        Enemigo(300, 100, "jefe"), 
+                        Enemigo(100, 100, "fuerte"),
+                        Enemigo(450, 100, "fuerte")
+                    ]
             else:
                 estado_juego = "VICTORIA"
 

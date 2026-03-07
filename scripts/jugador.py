@@ -2,7 +2,7 @@ import pygame
 
 class Caballero:
     def __init__(self, x, y):
-        # Representación del jugador
+        # jugador
         self.rect = pygame.Rect(x, y, 32, 32)
         self.direccion = "ABAJO"
         
@@ -15,13 +15,14 @@ class Caballero:
         #estado de ataque
         self.atacando= False
         self.tiempo_ataque = 0
-        self.duracion_ataque= 1000
+        self.duracion_ataque= 300
 
-        # --- ANIMACIONES ---
-        # Función interna para cargar y escalar fácilmente
+        self.ultimo_ataque = 0
+        self.tiempo_entre_ataques= 600
+
+        # escalar
         def cargar_escalar(ruta):
             img_gigante = pygame.image.load(ruta).convert_alpha()
-            # 2. Usamos 'smoothscale' para alta calidad al encoger
             return pygame.transform.smoothscale(img_gigante, (32, 32))
         
         # imagenes direccionales
@@ -46,7 +47,7 @@ class Caballero:
         self.imagen_actual = self.animaciones[self.direccion][0]
         self.en_movimiento = False
 
-    # Función para dibujarlo (¡Habías olvidado esta!)
+    #Funcion para dibujarlo
     def dibujar(self, superficie):
 
         # Dibujamos el sprite
@@ -60,15 +61,14 @@ class Caballero:
         else:
             imagen_a_dibujar = self.imagen_actual
 
-        # CAMBIO AQUÍ: Usamos la variable 'imagen_a_dibujar' que calculamos arriba
         superficie.blit(imagen_a_dibujar, self.rect)
 
         
-        # Si está usando la tecla X (defensa), le ponemos un aura celeste
+        # Si está usando la tecla X, le ponemos un aura 
         if self.defendiendo:
             pygame.draw.rect(superficie, (0, 255, 255), self.rect, 3)
 
-    # Función unificada para moverlo
+    # Función para moverlo
     def mover(self, muros):
         if self.atacando:
             return
@@ -77,12 +77,11 @@ class Caballero:
         # Detectamos la tecla X para defender
         self.defendiendo = teclas[pygame.K_x]
         
-        # Si defiende va lento (2), si no, normal (5)
         velocidad = 2 if self.defendiendo else 5
 
         self.en_movimiento = False
 
-        # --- EJE X ---
+        # eje x
         if teclas[pygame.K_LEFT]:
             self.rect.x -= velocidad
             self.direccion = "IZQUIERDA"
@@ -99,7 +98,7 @@ class Caballero:
                 if teclas[pygame.K_LEFT]:
                     self.rect.left = muro.right
 
-        # --- EJE Y ---
+        # eje y
         if teclas[pygame.K_UP]:
             self.rect.y -= velocidad
             self.direccion = "ARRIBA"
@@ -116,7 +115,7 @@ class Caballero:
                 if teclas[pygame.K_UP]:
                     self.rect.top = muro.bottom
 
-        # --- REPRODUCTOR DE ANIMACIONES ---
+        # Animaciones
         lista_actual = self.animaciones[self.direccion]
 
         if self.en_movimiento:
@@ -130,17 +129,24 @@ class Caballero:
 
     # Función para atacar
     def atacar(self, lista_enemigos):
-        if self.defendiendo:
-            print("¡No puedes atacar mientras te defiendes!")
+        tiempo_actual = pygame.time.get_ticks()
+
+        if tiempo_actual - self.ultimo_ataque < self.tiempo_entre_ataques:
             return
         
+        if self.defendiendo:
+            print("No puedes atacar mientras te defiendes!")
+            return
+        
+        self.ultimo_ataque = tiempo_actual
+
         #activar animacion de ataque
         self.atacando= True
         self.tiempo_ataque= pygame.time.get_ticks()
 
         rango = 32
 
-        # Área de ataque (Ya corregidos los pygame.Rect)
+        # Área de ataque 
         if self.direccion == "ARRIBA":
             area_ataque = pygame.Rect(self.rect.x, self.rect.y - rango, 32, 32)
         elif self.direccion == "ABAJO":
@@ -150,8 +156,14 @@ class Caballero:
         elif self.direccion == "DERECHA":
             area_ataque = pygame.Rect(self.rect.x + rango, self.rect.y, 32, 32)
 
-        # Verificamos colision con enemigos
+       # Verificamos colision con enemigos
+        daño_espada= 25
+
         for enemigo in lista_enemigos[:]:
             if area_ataque.colliderect(enemigo.rect):
-                lista_enemigos.remove(enemigo)
-                print("Enemigo eliminado")
+                enemigo.vida -= daño_espada
+                print(f"¡Le diste a un {enemigo.tipo}! Vida restante: {enemigo.vida}")
+
+                if enemigo.vida <=0:
+                    lista_enemigos.remove(enemigo)
+                    print(f"{enemigo.tipo} eliminado")
