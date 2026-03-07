@@ -1,3 +1,6 @@
+#Nombre: Jossie Gabriel Acosta Ruiz
+#Matricula: 24-EISN-2-029
+
 import pygame
 import sys
 
@@ -28,6 +31,19 @@ img_muro = pygame.image.load("assets/imagenes/escenario/descarga.WEBP") .convert
 img_muro = pygame.transform.scale (img_muro, (TILE_SIZE, TILE_SIZE))
 
 img_suelo = pygame.image.load("assets/imagenes/escenario/piso.jpg")
+
+
+#musica
+pygame.mixer.init()
+Musica_menu = "assets/musica/menu.mp3"
+Musica_nivel = "assets/musica/juego.mp3"
+Musica_jefe = "assets/musica/jefe.mp3"
+Musica_muerte = "assets/musica/muerte.mp3"
+
+def cambiar_musica(ruta_cancion):
+    pygame.mixer_music.load(ruta_cancion)
+    pygame.mixer.music.play(-1)
+
 
 # Funcion que convierte el mapa en muros y puerta
 def cargar_mapa(mapa_array):
@@ -90,6 +106,9 @@ estado_juego = "MENU"
 
 clock = pygame.time.Clock()
 
+#inicio de musica
+cambiar_musica(Musica_menu)
+
 # Bucle principal del juego
 while True:
     for event in pygame.event.get():
@@ -111,9 +130,16 @@ while True:
                 elif estado_juego == "INTRO":
                     reiniciar_juego() 
                     estado_juego = "JUGANDO"
+                    cambiar_musica(Musica_nivel)
+
+                elif estado_juego == "Antes_jefe":
+                    estado_juego= "JUGANDO"
+                    cambiar_musica(Musica_jefe)
+
 
                 elif estado_juego == "GAME_OVER" or estado_juego == "VICTORIA":
                     estado_juego = "MENU" 
+                    cambiar_musica(Musica_menu)
 
             # Ataque del jugador
             if event.key == pygame.K_SPACE and estado_juego == "JUGANDO":
@@ -132,14 +158,22 @@ while True:
 
     # Historia del juego
     elif estado_juego == "INTRO":
-        dibujar_texto("El Rey ha sido capturado en las mazmorras oscuras.", fuente_texto, (200, 200, 200), centro_x, centro_y - 80)
-        dibujar_texto("Eres el último caballero en pie.", fuente_texto, (200, 200, 200), centro_x, centro_y - 30)
-        dibujar_texto("Tu misión: Sobrevivir y encontrar la salida.", fuente_texto, (200, 200, 200), centro_x, centro_y + 20)
-        dibujar_texto("[Presiona ENTER para entrar a la mazmorra]", fuente_texto, (255, 215, 0), centro_x, centro_y + 120)
+        dibujar_texto("El Rey ha sido capturado en las mazmorras oscuras.", fuente_texto, (200, 200, 200), centro_x, centro_y - 90)
+        dibujar_texto("Eres el último caballero en pie.", fuente_texto, (200, 200, 200), centro_x, centro_y - 50)
+        dibujar_texto("Tu misión: Sobrevivir y encontrar la salida.", fuente_texto, (200, 200, 200), centro_x, centro_y - 10)
+        dibujar_texto("Usa las flechas para moverte y la tecla SPACE para atacar.", fuente_texto, (150, 200, 255), centro_x, centro_y + 40)
+        dibujar_texto("Mantén la tecla X para utilizar tu escudo mágico.", fuente_texto, (150, 200, 255), centro_x, centro_y + 80)
+        dibujar_texto("[Presiona ENTER para entrar al castillo]", fuente_texto, (255, 215, 0), centro_x, centro_y + 140)
+
+    elif estado_juego == "Antes_jefe":
+        dibujar_texto("Sientes un frío paralizante...", fuente_texto, (200, 200, 200), centro_x, centro_y - 80)
+        dibujar_texto("La inmensa puerta de la Sala del Trono se alza ante ti.", fuente_texto, (200, 200, 200), centro_x, centro_y - 30)
+        dibujar_texto("Prepárate para enfrentar tu destino.", fuente_texto, (255, 100, 100), centro_x, centro_y + 20)
+        dibujar_texto("[Presiona ENTER para entrar a la Sala del Rey]", fuente_texto, (255, 215, 0), centro_x, centro_y + 120)
 
     # Estado donde se juega
     elif estado_juego == "JUGANDO":
-
+        
         for sx, sy in suelos:
             screen.blit((img_suelo),(sx, sy))
 
@@ -171,7 +205,10 @@ while True:
                         Enemigo(300, 250, "fuerte")
                     ]
                 elif indice_mapa == 2:
+                    estado_juego= "Antes_jefe"
+                    pygame.mixer.music.stop()
                     # Nivel 3
+                    cambiar_musica(Musica_jefe)
                     jugador.rect.x = 300
                     jugador.rect.y = 320 
                     
@@ -198,10 +235,12 @@ while True:
 
         if jugador.vida > 0:
             pygame.draw.rect(screen, (0, 255, 0), (20, 20, jugador.vida * 2, 20))
+            
 
         # Si el jugador muere
         if jugador.vida <= 0:
             estado_juego = "GAME_OVER"
+            cambiar_musica(Musica_muerte)
 
     # Pantalla de derrota
     elif estado_juego == "GAME_OVER":

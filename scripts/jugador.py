@@ -1,3 +1,6 @@
+#Nombre: Jossie Gabriel Acosta Ruiz
+#Matricula: 24-EISN-2-029
+
 import pygame
 
 class Caballero:
