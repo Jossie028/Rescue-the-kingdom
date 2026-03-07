@@ -18,5 +18,5 @@ También se empleará para evitar obstáculos dentro del mapa.
 Uso del Árbol de Conocimiento:
 Mediante el árbol de conocimiento, los enemigos o NPC decidirán qué acción realizar dependiendo de la situación, como perseguir o atacar
 
-#Aclaracion
+## Aclaracion
 Mi proyecto se encuentra en la rama main
